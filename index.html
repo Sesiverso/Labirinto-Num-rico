@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labirinto Matemático</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f3f4f6;
+        }
+
+        #labirinto {
+            margin: 20px auto;
+            display: grid;
+            grid-template-columns: repeat(15, 30px);
+            grid-template-rows: repeat(15, 30px);
+            gap: 1px;
+            width: fit-content;
+            height: fit-content;
+            background-color: #000;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            background-color: #fff;
+            border: 1px solid #333;
+        }
+
+        .wall {
+            background-color: #333;
+        }
+
+        .path {
+            background-color: #fff;
+        }
+
+        .start {
+            background-color: #4caf50;
+        }
+
+        .end {
+            background-color: #ff5722;
+        }
+
+        #player {
+            width: 30px;
+            height: 30px;
+            background-color: yellow;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            font-size: 20px;
+            color: black;
+            font-weight: bold;
+        }
+
+        .sorriso {
+            font-size: 18px;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        .btn {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Labirinto Matemático</h1>
+<p>Use os botões para mover o cubo com o sorrisinho!</p>
+<div id="labirinto"></div>
+
+<div class="controls">
+    <button class="btn" onclick="move('up')">Cima</button>
+    <br />
+    <button class="btn" onclick="move('left')">Esquerda</button>
+    <button class="btn" onclick="move('right')">Direita</button>
+    <br />
+    <button class="btn" onclick="move('down')">Baixo</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/maze.js@1.1.0"></script>
+<script>
+    const rows = 15; // Tamanho do labirinto (linhas)
+    const cols = 15; // Tamanho do labirinto (colunas)
+    let grid = []; // Matriz para o labirinto
+    let playerPos = { x: 0, y: 0 }; // Posição inicial do jogador
+
+    // Direções possíveis para movimentação (cima, baixo, esquerda, direita)
+    const directions = [
+        [-1, 0], // cima
+        [1, 0],  // baixo
+        [0, -1], // esquerda
+        [0, 1]   // direita
+    ];
+
+    // Função para inicializar o grid com o maze.js
+    function initializeGrid() {
+        const maze = new Maze(rows, cols);
+        maze.generate(); // Gera o labirinto
+        grid = maze.grid;
+    }
+
+    // Função para desenhar o labirinto
+    function drawLabirinto() {
+        const container = document.getElementById("labirinto");
+        container.innerHTML = ""; // Limpa o labirinto antigo
+
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+
+                if (grid[i][j] === 1) {
+                    cell.classList.add("wall");
+                } else if (grid[i][j] === 0) {
+                    cell.classList.add("path");
+                }
+
+                // Desenha o início (start) e o fim (end)
+                if (i === 0 && j === 0) {
+                    cell.classList.add("start"); // Marca o início
+                }
+
+                if (i === rows - 1 && j === cols - 1) {
+                    cell.classList.add("end"); // Marca o fim
+                }
+
+                container.appendChild(cell);
+            }
+        }
+
+        // Desenha o cubo (jogador)
+        const player = document.createElement("div");
+        player.id = "player";
+        player.classList.add("sorriso");
+        player.innerText = "😊";
+
+        // Posiciona o cubo na tela
+        const playerCell = container.children[playerPos.y * cols + playerPos.x];
+        playerCell.appendChild(player);
+    }
+
+    // Função para mover o jogador
+    function move(direction) {
+        let newX = playerPos.x;
+        let newY = playerPos.y;
+
+        if (direction === "up") newY--;
+        if (direction === "down") newY++;
+        if (direction === "left") newX--;
+        if (direction === "right") newX++;
+
+        // Verifica se a nova posição está dentro dos limites do labirinto e é um caminho
+        if (
+            newX >= 0 && newX < cols &&
+            newY >= 0 && newY < rows &&
+            grid[newY][newX] === 0
+        ) {
+            playerPos.x = newX;
+            playerPos.y = newY;
+            drawLabirinto();
+        }
+    }
+
+    // Função principal para iniciar o jogo
+    function startGame() {
+        initializeGrid(); // Gera o labirinto usando maze.js
+        drawLabirinto(); // Desenha o labirinto
+    }
+
+    startGame(); // Chama a função para gerar e desenhar o labirinto
+</script>
+
+</body>
+</html>
