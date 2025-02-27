@@ -80,6 +80,11 @@
         .btn:hover {
             background-color: #45a049;
         }
+
+        #question {
+            margin-top: 20px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -97,12 +102,17 @@
     <button class="btn" onclick="move('down')">Baixo</button>
 </div>
 
+<div id="question"></div>
+<input type="text" id="answer" placeholder="Digite sua resposta...">
+<button class="btn" onclick="checkAnswer()">Verificar Resposta</button>
+
 <script src="https://cdn.jsdelivr.net/npm/maze.js@1.1.0"></script>
 <script>
     const rows = 15; // Tamanho do labirinto (linhas)
     const cols = 15; // Tamanho do labirinto (colunas)
     let grid = []; // Matriz para o labirinto
     let playerPos = { x: 0, y: 0 }; // Posição inicial do jogador
+    let currentEquation = {}; // Equação atual para a "porta"
 
     // Direções possíveis para movimentação (cima, baixo, esquerda, direita)
     const directions = [
@@ -117,6 +127,45 @@
         const maze = new Maze(rows, cols);
         maze.generate(); // Gera o labirinto
         grid = maze.grid;
+
+        // Coloca algumas "paredes abertas" (valor 2) em locais aleatórios
+        for (let i = 0; i < 5; i++) {
+            let x = Math.floor(Math.random() * rows);
+            let y = Math.floor(Math.random() * cols);
+            if (grid[x][y] === 0) {
+                grid[x][y] = 2; // Marca a parede que pode ser aberta
+            }
+        }
+    }
+
+    // Função para gerar uma equação
+    function generateEquation() {
+        const num1 = Math.floor(Math.random() * 10) + 1;
+        const num2 = Math.floor(Math.random() * 10) + 1;
+        const result = num1 + num2;
+        currentEquation = { num1, num2, result };
+
+        // Exibe a equação
+        document.getElementById('question').innerText = `Quanto é ${num1} + ${num2}?`;
+    }
+
+    // Função para verificar a resposta
+    function checkAnswer() {
+        const userAnswer = parseInt(document.getElementById('answer').value);
+        if (userAnswer === currentEquation.result) {
+            // Se a resposta estiver correta, abre a porta
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (grid[i][j] === 2) {
+                        grid[i][j] = 0; // "Abre" a porta
+                        drawLabirinto();
+                        return;
+                    }
+                }
+            }
+        } else {
+            alert('Resposta incorreta! Tente novamente.');
+        }
     }
 
     // Função para desenhar o labirinto
@@ -133,6 +182,8 @@
                     cell.classList.add("wall");
                 } else if (grid[i][j] === 0) {
                     cell.classList.add("path");
+                } else if (grid[i][j] === 2) {
+                    cell.classList.add("wall"); // Exibe as "paredes abertas" como paredes
                 }
 
                 // Desenha o início (start) e o fim (end)
@@ -173,7 +224,7 @@
         if (
             newX >= 0 && newX < cols &&
             newY >= 0 && newY < rows &&
-            grid[newY][newX] === 0
+            (grid[newY][newX] === 0 || grid[newY][newX] === 2) // Permite mover para caminhos ou paredes abertas
         ) {
             playerPos.x = newX;
             playerPos.y = newY;
@@ -185,6 +236,7 @@
     function startGame() {
         initializeGrid(); // Gera o labirinto usando maze.js
         drawLabirinto(); // Desenha o labirinto
+        generateEquation(); // Gera uma equação para abrir uma porta
     }
 
     startGame(); // Chama a função para gerar e desenhar o labirinto
